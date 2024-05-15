@@ -4,7 +4,7 @@ import cv2
 import os
 import time
 
-camera_url = "rtsp://192.168.0.100:8080/h264_pcm.sdp"
+camera_url = "rtsp://admin:neocombat1@rgnashville.better-than.tv:555"
 
 parser = face.parser()
 args = parser.parse_args()
@@ -45,22 +45,15 @@ def write_to_file(filepath, person_name, filename="Dataset/labels.txt"):
     modified_filepath = "./" + os.path.join(person_name, os.path.basename(filepath))
     with open(filename, 'a') as f:
         f.write("{}\t{}\n".format(modified_filepath, person_name))
-        
-def enter_person_name():
-    # Create a directory for the person's name
-    person_name = input("Enter the person's name: ")  # Prompt the user to enter the person's name
-    output_dir = os.path.join("Dataset", person_name)
-    os.makedirs(output_dir, exist_ok=True)
-    return person_name, output_dir
 
-def capture_face_images(camera_url, person_name, output_dir):
+def capture_face_images(camera_url, output_dir, duration):
     # Initialize the count
     cnt = 0
 
     # Start the webcam
     cap = cv2.VideoCapture(camera_url)
 
-    end_time = time.time() + 10
+    end_time = time.time() + duration
     frame_count = 0
 
     while time.time() < end_time:
@@ -76,10 +69,11 @@ def capture_face_images(camera_url, person_name, output_dir):
         cv2.imshow(f"Camera", img)
         # Crop and save the detected faces
         if frame_count % 4 == 0 and box_list:
-            filename = '{}_{}.jpeg'.format(person_name, cnt)
-            filepath = os.path.join(output_dir, filename)
-            crop_and_save_face(resized_frame, filepath, box_list)
-            write_to_file(filepath, person_name)
+            for i, box in enumerate(box_list):
+                filename = 'face_{}_{}.jpeg'.format(cnt, i)
+                filepath = os.path.join(output_dir, filename)
+                crop_and_save_face(resized_frame, filepath, [box])
+                write_to_file(filepath, "Unknown")
             cnt += 1
             
         
@@ -88,6 +82,8 @@ def capture_face_images(camera_url, person_name, output_dir):
         
 if __name__ == '__main__':
     
-    person_name, output_dir = enter_person_name()
-    capture_face_images(camera_url, person_name, output_dir)
+    duration = 120  # Set the duration in seconds (e.g., 2 minutes = 120 seconds)
+    output_dir = "Dataset/Unknown"
+    os.makedirs(output_dir, exist_ok=True)
+    capture_face_images(camera_url, output_dir, duration)
     predictor.build_index()

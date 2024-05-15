@@ -12,7 +12,6 @@ face_detector = hub.Module(name="pyramidbox_lite_mobile")
 parser = face.parser()
 args = parser.parse_args()
 
-
 args.use_gpu = True
 args.det = False
 args.rec = True
@@ -20,8 +19,6 @@ args.rec_thresh = 0.45
 args.index = "Dataset/index.bin"
 args.rec_model = "Models/mobileface_v1.0_infer"
 recognizer = face.InsightFace(args)
-
-
 
 def detect_face(image):
     result = face_detector.face_detection(images=[image], use_gpu=True)
